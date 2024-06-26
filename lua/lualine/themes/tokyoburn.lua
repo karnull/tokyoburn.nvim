@@ -4,34 +4,34 @@ local config = require("tokyoburn.config").options
 local tokyoburn = {}
 
 tokyoburn.normal = {
-  a = { bg = colors.blue, fg = colors.black },
-  b = { bg = colors.fg_gutter, fg = colors.blue },
+  a = { bg = colors.red , fg = colors.black },
+  b = { bg = colors.black , fg = colors.red },
   c = { bg = colors.bg_statusline, fg = colors.fg_sidebar },
 }
 
 tokyoburn.insert = {
-  a = { bg = colors.green, fg = colors.black },
-  b = { bg = colors.fg_gutter, fg = colors.green },
+  a = { bg = colors.blue, fg = colors.black },
+  b = { bg = colors.black , fg = colors.blue },
 }
 
 tokyoburn.command = {
-  a = { bg = colors.yellow, fg = colors.black },
-  b = { bg = colors.fg_gutter, fg = colors.yellow },
+  a = { bg = colors.green, fg = colors.black },
+  b = { bg = colors.black , fg = colors.green },
 }
 
 tokyoburn.visual = {
-  a = { bg = colors.magenta, fg = colors.black },
-  b = { bg = colors.fg_gutter, fg = colors.magenta },
+  a = { bg = colors.teal , fg = colors.black },
+  b = { bg = colors.black , fg = colors.teal },
 }
 
 tokyoburn.replace = {
-  a = { bg = colors.red, fg = colors.black },
-  b = { bg = colors.fg_gutter, fg = colors.red },
+  a = { bg = colors.yellow , fg = colors.black },
+  b = { bg = colors.black , fg = colors.yellow },
 }
 
 tokyoburn.terminal = {
   a = {bg = colors.green1, fg = colors.black },
-  b = {bg = colors.fg_gutter, fg=colors.green1 },
+  b = {bg = colors.black , fg=colors.green1 },
 }
 
 tokyoburn.inactive = {
@@ -47,3 +47,4 @@ if config.lualine_bold then
 end
 
 return tokyoburn
+

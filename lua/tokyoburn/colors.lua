@@ -5,14 +5,15 @@ local M = {}
 ---@class Palette
 M.default = {
   none = "NONE",
-  bg_dark = "#1f2335",
-  bg = "#24283b",
-  bg_highlight = "#292e42",
+  bg_dark = "#35231f",
+  bg = "#3b2824",
+  bg_highlight = "#422e29",
   terminal_black = "#414868",
   fg = "#c0caf5",
   fg_dark = "#a9b1d6",
-  fg_gutter = "#3b4261",
-  dark3 = "#545c7e",
+  fg_gutter = "#ff5f87",
+  fg_LineNr = "#ff0000",
+  dark3 = "#805050",
   comment = "#565f89",
   dark5 = "#737aa2",
   blue0 = "#3d59a1",
@@ -27,13 +28,14 @@ M.default = {
   magenta2 = "#ff007c",
   purple = "#9d7cd8",
   orange = "#ff9e64",
-  yellow = "#e0af68",
+  yellow = "#ffff00",
   green = "#9ece6a",
   green1 = "#73daca",
   green2 = "#41a6b5",
   teal = "#1abc9c",
   red = "#f7768e",
   red1 = "#db4b4b",
+  red2 = "#890000",
   git = { change = "#6183bb", add = "#449dab", delete = "#914c54" },
   gitSigns = {
     add = "#266d6a",
@@ -58,16 +60,17 @@ M.moon = function()
     fg = "#c8d3f5", --
     fg_dark = "#828bb8", --
     fg_gutter = "#3b4261",
+    fg_LineNr = "#ff748c",
     dark3 = "#545c7e",
     comment = "#7a88cf", --
     dark5 = "#737aa2",
-    blue0 = "#3e68d7", --
-    blue = "#82aaff", --
+    blue0 = "#3e68d7", --  -- b l u e
+    blue = "#82aaff", --  -- b l u e
     cyan = "#86e1fc", --
-    blue1 = "#65bcff", --
-    blue2 = "#0db9d7",
-    blue5 = "#89ddff",
-    blue6 = "#b4f9f8", --
+    blue1 = "#65bcff", --  -- b l u e
+    blue2 = "#0db9d7",  -- b l u e
+    blue5 = "#89ddff",  -- b l u e
+    blue6 = "#b4f9f8", --  -- b l u e
     blue7 = "#394b70",
     purple = "#fca7ea", --
     magenta2 = "#ff007c",
@@ -80,15 +83,16 @@ M.moon = function()
     teal = "#4fd6be", --
     red = "#ff757f", --
     red1 = "#c53b53", --
+    red2 = "#ff0080",
   }
   ret.comment = util.blend(ret.comment, ret.bg, "bb")
   ret.git = {
-    change = util.blend(ret.blue, ret.bg, "ee"),
+    change = util.blend(ret.blue, ret.bg, "ee"),  -- b l u e
     add = util.blend(ret.green, ret.bg, "ee"),
     delete = util.blend(ret.red, ret.bg, "dd"),
   }
   ret.gitSigns = {
-    change = util.blend(ret.blue, ret.bg, "66"),
+    change = util.blend(ret.blue, ret.bg, "66"),  -- b l u e
     add = util.blend(ret.green, ret.bg, "66"),
     delete = util.blend(ret.red, ret.bg, "aa"),
   }
@@ -116,18 +120,18 @@ function M.setup(opts)
   colors.diff = {
     add = util.darken(colors.green2, 0.15),
     delete = util.darken(colors.red1, 0.15),
-    change = util.darken(colors.blue7, 0.15),
-    text = colors.blue7,
+    change = util.darken(colors.blue7, 0.15),  -- b l u e
+    text = colors.blue7,  -- b l u e
   }
 
   colors.git.ignore = colors.dark3
   colors.black = util.darken(colors.bg, 0.8, "#000000")
-  colors.border_highlight = util.darken(colors.blue1, 0.8)
-  colors.border = colors.black
+  colors.border_highlight = util.darken(colors.red, 0.8)  -- b l u e
+  colors.border = colors.yellow
 
   -- Popups and statusline always get a dark background
   colors.bg_popup = colors.bg_dark
-  colors.bg_statusline = colors.bg_dark
+  colors.bg_statusline = colors.none
 
   -- Sidebar and Floats are configurable
   colors.bg_sidebar = config.options.styles.sidebars == "transparent" and colors.none
@@ -138,7 +142,7 @@ function M.setup(opts)
     or config.options.styles.floats == "dark" and colors.bg_dark
     or colors.bg
 
-  colors.bg_visual = util.darken(colors.blue0, 0.4)
+  colors.bg_visual = util.darken(colors.red1, 0.4)
   colors.bg_search = colors.blue0
   colors.fg_sidebar = colors.fg_dark
   -- colors.fg_float = config.options.styles.floats == "dark" and colors.fg_dark or colors.fg
