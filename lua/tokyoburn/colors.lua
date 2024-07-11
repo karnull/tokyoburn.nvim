@@ -36,6 +36,8 @@ M.default = {
   red = "#f7768e",
   red1 = "#db4b4b",
   red2 = "#890000",
+  red3 = "#e60000",
+  red4 = "#b30000",
   git = { change = "#6183bb", add = "#449dab", delete = "#914c54" },
   gitSigns = {
     add = "#266d6a",
@@ -84,6 +86,8 @@ M.moon = function()
     red = "#ff757f", --
     red1 = "#c53b53", --
     red2 = "#ff0080",
+    red3 = "#e60000",
+    red4 = "#b30000",
   }
   ret.comment = util.blend(ret.comment, ret.bg, "bb")
   ret.git = {
@@ -126,8 +130,8 @@ function M.setup(opts)
 
   colors.git.ignore = colors.dark3
   colors.black = util.darken(colors.bg, 0.8, "#000000")
-  colors.border_highlight = util.darken(colors.red, 0.8)  -- b l u e
-  colors.border = colors.yellow
+  colors.border_highlight = util.darken(colors.yellow, 0.8)  -- b l u e
+  colors.border = colors.red
 
   -- Popups and statusline always get a dark background
   colors.bg_popup = colors.bg_dark
