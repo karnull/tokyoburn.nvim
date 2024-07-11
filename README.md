@@ -7,20 +7,19 @@ A dark and light [Neovim](https://github.com/neovim/neovim) theme written in
 Tokyonight](https://github.com/enkia/tokyo-night-vscode-theme) theme.
 
 ## Storm
-
-![image]()
+![image](.media/storm.png)
 
 ## Night
-
-![image]()
+![image](.media/night.png)
 
 ## Moon
-
-![image]()
+![image](.media/moon.png)
 
 ## Day
+![image](.media/day.png)
 
-![image]()
+## Transparent
+![image](.media/transparent.png)
 
 ## ✨ Features
 
