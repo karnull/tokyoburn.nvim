@@ -35,7 +35,7 @@ function M.setup()
     lCursor = { fg = c.bg, bg = c.fg }, -- the character under the cursor when |language-mapping| is used (see 'guicursor')
     CursorIM = { fg = c.bg, bg = c.fg }, -- like Cursor, but used when in IME mode |CursorIM|
     CursorColumn = { bg = c.bg_highlight }, -- Screen-column at the cursor, when 'cursorcolumn' is set.
-    CursorLine = { bg = c.bg_highlight }, -- Screen-line at the cursor, when 'cursorline' is set.  Low-priority if foreground (ctermfg OR guifg) is not set.
+    CursorLine = { bg = c.red2 }, -- Screen-line at the cursor, when 'cursorline' is set.  Low-priority if foreground (ctermfg OR guifg) is not set.
     Directory = { fg = c.red1 }, -- directory names (and other special names in listings)
     DiffAdd = { bg = c.diff.add }, -- diff mode: Added line |diff.txt|
     DiffChange = { bg = c.diff.change }, -- diff mode: Changed line |diff.txt|
@@ -103,21 +103,21 @@ function M.setup()
     -- Uncomment and edit if you want more specific syntax highlighting.
 
     Constant = { fg = c.orange }, -- (preferred) any constant
-    String = { fg = c.red }, --   a string constant: "this is a string"
+    String = { fg = c.green }, --   a string constant: "this is a string"
     Character = { fg = c.blue }, --  a character constant: 'c', '\n'
     -- Number        = { }, --   a number constant: 234, 0xff
     -- Boolean       = { }, --  a boolean constant: TRUE, false
     -- Float         = { }, --    a floating point constant: 2.3e10
 
-    Identifier = { fg = c.red3, style = options.styles.variables }, -- (preferred) any variable name
-    Function = { fg = c.red4, style = options.styles.functions }, -- function name (also: methods for classes)
+    Identifier = { fg = c.magenta, style = options.styles.variables }, -- (preferred) any variable name
+    Function = { fg = c.blue, style = options.styles.functions }, -- function name (also: methods for classes)
 
     Statement = { fg = c.red1 }, -- (preferred) any statement
     -- Conditional   = { }, --  if, then, else, endif, switch, etc.
     -- Repeat        = { }, --   for, do, while, etc.
     -- Label         = { }, --    case, default, etc.
     Operator = { fg = c.blue5 }, -- "sizeof", "+", "*", etc.
-    Keyword = { fg = c.yellow , style = options.styles.keywords }, --  any other keyword
+    Keyword = { fg = c.purple , style = options.styles.keywords }, --  any other keyword
     -- Exception     = { }, --  try, catch, throw
 
     PreProc = { fg = c.yellow }, -- (preferred) generic Preprocessor
@@ -126,7 +126,7 @@ function M.setup()
     -- Macro         = { }, --    same as Define
     -- PreCondit     = { }, --  preprocessor #if, #else, #endif, etc.
 
-    Type = { fg = c.yellow }, -- (preferred) int, long, char, etc.
+    Type = { fg = c.cyan }, -- (preferred) int, long, char, etc.
     -- StorageClass  = { }, -- static, register, volatile, etc.
     -- Structure     = { }, --  struct, union, enum, etc.
     -- Typedef       = { }, --  A typedef
@@ -293,7 +293,7 @@ function M.setup()
 
     --- Keywords
     ["@keyword"] = { fg = c.purple, style = options.styles.keywords }, -- For keywords that don't fall in previous categories.
-    ["@keyword.function"] = { fg = c.red3, style = options.styles.functions }, -- For keywords used to define a function.
+    ["@keyword.function"] = { fg = c.purple, style = options.styles.functions }, -- For keywords used to define a function.
 
     ["@label"] = { fg = c.blue }, -- For labels: `label:` in C and `:label:` in Lua.
 

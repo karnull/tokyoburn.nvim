@@ -1,4 +1,4 @@
-# 🏙 TokyoBurn
+# TokyoBurn
 
 A dark and light [Neovim](https://github.com/neovim/neovim) theme written in
 [Lua](https://www.lua.org) forked from
@@ -6,14 +6,8 @@ A dark and light [Neovim](https://github.com/neovim/neovim) theme written in
 [Visual Studio Code
 Tokyonight](https://github.com/enkia/tokyo-night-vscode-theme) theme.
 
-## Storm
-![image](.media/storm.png)
-
 ## Night
 ![image](.media/night.png)
-
-## Moon
-![image](.media/moon.png)
 
 ## Day
 ![image](.media/day.png)
@@ -21,7 +15,7 @@ Tokyonight](https://github.com/enkia/tokyo-night-vscode-theme) theme.
 ## Transparent
 ![image](.media/transparent.png)
 
-## ✨ Features
+## Features
 
 - Supports the latest [Neovim](https://github.com/neovim/neovim)
   [0.10.0](https://github.com/neovim/neovim/releases/tag/v0.9.0) features.
@@ -29,43 +23,30 @@ Tokyonight](https://github.com/enkia/tokyo-night-vscode-theme) theme.
 - Introduces a darker background option for sidebar-like windows.
 - Supports all major plugins.
 
-## ⚡️ Requirements
+## Requirements
 
 - [Neovim](https://github.com/neovim/neovim) >=
   [0.8.0](https://github.com/neovim/neovim/releases/tag/v0.8.0)
 
-## 📦 Installation
+## Installation
 
-Install the theme with your preferred package manager, such as
-[folke/lazy.nvim](https://github.com/folke/lazy.nvim):
+Using the built-in package manager (Neovim 0.12+):
 
 ```lua
-{
-  "karshPrime/tokyoburn.nvim",
-  lazy = false,
-  priority = 1000,
-  opts = {},
-}
+vim.pack.add({
+    'https://github.com/karnull/tokyoburn.nvim',
+})
 ```
 
-## 🚀 Usage
 
-### Vim Script
-
-```vim
-colorscheme tokyoburn
-
-" There are also colorschemes for the different styles.
-colorscheme tokyoburn-night
-colorscheme tokyoburn-storm
-colorscheme tokyoburn-day
-colorscheme tokyoburn-moon
-```
-
-### [Lua](https://www.lua.org)
+## Usage
 
 ```lua
 vim.cmd[[colorscheme tokyoburn]]
+
+-- There are also colorschemes for the different styles.
+vim.cmd[[colorscheme tokyoburn-night]]
+vim.cmd[[colorscheme tokyoburn-day]]
 ```
 
 #### External Plugins
@@ -96,29 +77,27 @@ require('lualine').setup {
 
 ##### [Lightline](https://github.com/itchyny/lightline.vim)
 
-```vim
-" Vim Script
-let g:lightline = {'colorscheme': 'tokyoburn'}
+```lua
+vim.g.lightline = { colorscheme = 'tokyoburn' }
 ```
 
-## ⚙️ Configuration
+## Configuration
 
-> ❗️ Set the configuration **BEFORE** loading the color scheme with `colorscheme tokyoburn`.
+> Set the configuration **BEFORE** loading the color scheme with `colorscheme tokyoburn`.
 
-The theme offers four styles: [storm](#storm), [moon](#moon), [night](#night),
-and [day](#day).
+The theme offers two styles: [night](#night) and [day](#day).
 
 The [day](#day) style is used when `{ style = "day" }` is passed to
 `setup(options)` or when `vim.o.background = "light"`.
 
-[TokyoBurn](https://github.com/karshPrime/tokyoburn.nvim) uses the default options,
+[TokyoBurn](https://github.com/karnull/tokyoburn.nvim) uses the default options,
 unless `setup` is explicitly called.
 
 ```lua
 require("tokyoburn").setup({
   -- your configuration comes here
   -- or leave it empty to use the default settings
-  style = "storm", -- The theme comes in three styles, `storm`, `moon`, a darker variant `burn` and `day`
+  style = "night", -- The theme comes in two styles, `night` and a light variant `day`
   light_style = "day", -- The theme is used when the background is set to light
   transparent = false, -- Enable this to disable setting the background color
   terminal_colors = true, -- Configure the colors used when opening a `:terminal` in [Neovim](https://github.com/neovim/neovim)
@@ -152,7 +131,7 @@ require("tokyoburn").setup({
 })
 ```
 
-## 🪓 Overriding Colors & Highlight Groups
+## Overriding Colors & Highlight Groups
 
 How the highlight groups are calculated:
 
@@ -163,9 +142,7 @@ How the highlight groups are calculated:
    groups.
 
 For default values of `colors` and `highlights`, please consult the
-[storm](extras/lua/tokyoburn_storm.lua),
-[moon](extras/lua/tokyoburn_moon.lua),
-[night](extras/lua/tokyoburn_night.lua), and
+[night](extras/lua/tokyoburn_night.lua) and
 [day](extras/lua/tokyoburn_day.lua) themes.
 
 ### Settings and color alteration demonstration
@@ -235,25 +212,4 @@ set -g default-terminal "${TERM}"
 set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'  # undercurl support
 set -as terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m'  # underscore colours - needs tmux-3.0
 ```
-
-## 🔥 Contributing
-
-Pull requests are welcome.
-
-For the [extras](#-extras), we use a simple template system that can be used to
-generate themes for the different styles.
-
-How to add a new extra template:
-
-1. Create a file like `lua/tokyoburn/extra/cool-app.lua`.
-2. Add the name and output file extension to the `extras` table in
-   `lua/tokyoburn/extra/init.lua`.
-3. Run the following command to generate new [extra](#-extras) themes from the tokyoburn plugin directory:
-
-   ```sh
-   nvim --headless "+lua require('tokyoburn.extra').setup()" +qa
-   ```
-
-4. Check the newly created themes in the `extra/` directory. Please **DO NOT**
-   commit them, as they are already automatically built by the CI.
 

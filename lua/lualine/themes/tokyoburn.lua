@@ -4,14 +4,14 @@ local config = require("tokyoburn.config").options
 local tokyoburn = {}
 
 tokyoburn.normal = {
-  a = { bg = colors.red , fg = colors.black },
-  b = { bg = colors.black , fg = colors.red },
+  a = { bg = colors.rose, fg = colors.black },
+  b = { bg = colors.black, fg = colors.rose },
   c = { bg = colors.bg_statusline, fg = colors.fg_sidebar },
 }
 
 tokyoburn.insert = {
-  a = { bg = colors.blue, fg = colors.black },
-  b = { bg = colors.black , fg = colors.blue },
+  a = { bg = colors.pastel_yellow, fg = colors.black },
+  b = { bg = colors.black, fg = colors.pastel_yellow },
 }
 
 tokyoburn.command = {
@@ -20,13 +20,13 @@ tokyoburn.command = {
 }
 
 tokyoburn.visual = {
-  a = { bg = colors.teal , fg = colors.black },
-  b = { bg = colors.black , fg = colors.teal },
+  a = { bg = colors.pastel_red, fg = colors.black },
+  b = { bg = colors.black, fg = colors.pastel_red },
 }
 
 tokyoburn.replace = {
-  a = { bg = colors.yellow , fg = colors.black },
-  b = { bg = colors.black , fg = colors.yellow },
+  a = { bg = colors.pastel_orange, fg = colors.black },
+  b = { bg = colors.black, fg = colors.pastel_orange },
 }
 
 tokyoburn.terminal = {

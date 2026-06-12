@@ -4,7 +4,7 @@ local M = {}
 ---@field on_colors fun(colors: ColorScheme)
 ---@field on_highlights fun(highlights: Highlights, colors: ColorScheme)
 local defaults = {
-  style = "storm", -- The theme comes in three styles, `storm`, a darker variant `night` and `day`
+  style = "night", -- The theme comes in two styles, `night` and `day`
   light_style = "day", -- The theme is used when the background is set to light
   transparent = false, -- Enable this to disable setting the background color
   terminal_colors = true, -- Configure the colors used when opening a `:terminal` in Neovim
@@ -41,14 +41,25 @@ local defaults = {
 ---@type Config
 M.options = {}
 
+-- The `storm` and `moon` styles were removed; map them to `night` so existing
+-- configs keep working (storm = moon = night).
+local function normalize(options)
+  for _, key in ipairs({ "style", "light_style" }) do
+    if options[key] == "storm" or options[key] == "moon" then
+      options[key] = "night"
+    end
+  end
+  return options
+end
+
 ---@param options Config|nil
 function M.setup(options)
-  M.options = vim.tbl_deep_extend("force", {}, defaults, options or {})
+  M.options = normalize(vim.tbl_deep_extend("force", {}, defaults, options or {}))
 end
 
 ---@param options Config|nil
 function M.extend(options)
-  M.options = vim.tbl_deep_extend("force", {}, M.options or defaults, options or {})
+  M.options = normalize(vim.tbl_deep_extend("force", {}, M.options or defaults, options or {}))
 end
 
 function M.is_day()
