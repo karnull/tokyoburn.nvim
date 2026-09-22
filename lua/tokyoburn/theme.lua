@@ -25,10 +25,12 @@ function M.setup()
 
   local c = theme.colors
 
-  theme.highlights = {
-    Foo = { bg = c.magenta2, fg = c.fg },
+  local styles = options.styles
+  -- background shared by `Normal` and every group that tracks the window bg
+  local bg_normal = options.transparent and c.none or c.bg
 
-    Comment = { fg = c.comment, style = options.styles.comments }, -- any comment
+  theme.highlights = {
+    Comment = { fg = c.comment, style = styles.comments }, -- any comment
     ColorColumn = { bg = c.red2 }, -- used for the columns set with 'colorcolumn'
     Conceal = { fg = c.dark5 }, -- placeholder characters substituted for concealed text (see 'conceallevel')
     Cursor = { fg = c.bg, bg = c.fg }, -- character under the cursor
@@ -48,8 +50,8 @@ function M.setup()
     VertSplit = { fg = c.border }, -- the column separating vertically split windows
     WinSeparator = { fg = c.border, bold = true }, -- the column separating vertically split windows
     Folded = { fg = c.red, bg = c.black }, -- line used for closed folds
-    FoldColumn = { bg = options.transparent and c.none or c.bg, fg = c.comment }, -- 'foldcolumn'
-    SignColumn = { bg = options.transparent and c.none or c.bg, fg = c.fg_gutter }, -- column where |signs| are displayed
+    FoldColumn = { bg = bg_normal, fg = c.comment }, -- 'foldcolumn'
+    SignColumn = { bg = bg_normal, fg = c.fg_gutter }, -- column where |signs| are displayed
     SignColumnSB = { bg = c.bg_sidebar, fg = c.fg_gutter }, -- column where |signs| are displayed
     Substitute = { bg = c.red, fg = c.black }, -- |:substitute| replacement text highlighting
     LineNr = { fg = c.fg_LineNr }, -- Line number for ":number" and ":#" commands, and when 'number' or 'relativenumber' option is set.
@@ -62,7 +64,7 @@ function M.setup()
     -- MsgSeparator= { }, -- Separator for scrolled messages, `msgsep` flag of 'display'
     MoreMsg = { fg = c.blue }, -- |more-prompt|
     NonText = { fg = c.dark3 }, -- '@' at the end of the window, characters from 'showbreak' and other characters that do not really exist in the text (e.g., ">" displayed when a double-wide character doesn't fit at the end of the line). See also |hl-EndOfBuffer|.
-    Normal = { fg = c.fg, bg = options.transparent and c.none or c.bg }, -- normal text
+    Normal = { fg = c.fg, bg = bg_normal }, -- normal text
     NormalNC = { fg = c.fg, bg = options.transparent and c.none or options.dim_inactive and c.bg_dark or c.bg }, -- normal text in non-current windows
     NormalSB = { fg = c.fg_sidebar, bg = c.bg_sidebar }, -- normal text in sidebar
     NormalFloat = { fg = c.fg_float, bg = c.bg_float }, -- Normal text in floating windows.
@@ -109,15 +111,15 @@ function M.setup()
     -- Boolean       = { }, --  a boolean constant: TRUE, false
     -- Float         = { }, --    a floating point constant: 2.3e10
 
-    Identifier = { fg = c.magenta, style = options.styles.variables }, -- (preferred) any variable name
-    Function = { fg = c.blue, style = options.styles.functions }, -- function name (also: methods for classes)
+    Identifier = { fg = c.magenta, style = styles.variables }, -- (preferred) any variable name
+    Function = { fg = c.blue, style = styles.functions }, -- function name (also: methods for classes)
 
     Statement = { fg = c.red1 }, -- (preferred) any statement
     -- Conditional   = { }, --  if, then, else, endif, switch, etc.
     -- Repeat        = { }, --   for, do, while, etc.
     -- Label         = { }, --    case, default, etc.
     Operator = { fg = c.blue5 }, -- "sizeof", "+", "*", etc.
-    Keyword = { fg = c.purple , style = options.styles.keywords }, --  any other keyword
+    Keyword = { fg = c.purple , style = styles.keywords }, --  any other keyword
     -- Exception     = { }, --  try, catch, throw
 
     PreProc = { fg = c.yellow }, -- (preferred) generic Preprocessor
@@ -292,8 +294,8 @@ function M.setup()
     ["@variable.parameter.builtin"] = { fg = util.lighten(c.yellow, 0.8) }, -- For builtin parameters of a function, e.g. "..." or Smali's p[1-99]
 
     --- Keywords
-    ["@keyword"] = { fg = c.purple, style = options.styles.keywords }, -- For keywords that don't fall in previous categories.
-    ["@keyword.function"] = { fg = c.purple, style = options.styles.functions }, -- For keywords used to define a function.
+    ["@keyword"] = { fg = c.purple, style = styles.keywords }, -- For keywords that don't fall in previous categories.
+    ["@keyword.function"] = { fg = c.purple, style = styles.functions }, -- For keywords used to define a function.
 
     ["@label"] = { fg = c.blue }, -- For labels: `label:` in C and `:label:` in Lua.
 
@@ -303,7 +305,7 @@ function M.setup()
     ["@property"] = { fg = c.green1 },
 
     --- Identifiers
-    ["@variable"] = { fg = c.fg, style = options.styles.variables }, -- Any variable name that does not have another highlight.
+    ["@variable"] = { fg = c.fg, style = styles.variables }, -- Any variable name that does not have another highlight.
     ["@variable.builtin"] = { fg = c.red }, -- Variable names that are defined by the languages, like `this` or `self`.
     ["@module.builtin"] = { fg = c.red }, -- Variable names that are defined by the languages, like `this` or `self`.
 
@@ -490,7 +492,7 @@ function M.setup()
     -- NvimTree
     NvimTreeNormal = { fg = c.fg_sidebar, bg = c.bg_sidebar },
     NvimTreeWinSeparator = {
-      fg = options.styles.sidebars == "transparent" and c.border or c.bg_sidebar,
+      fg = styles.sidebars == "transparent" and c.border or c.bg_sidebar,
       bg = c.bg_sidebar,
     },
     NvimTreeNormalNC = { fg = c.fg_sidebar, bg = c.bg_sidebar },
@@ -739,11 +741,11 @@ function M.setup()
     -- Notify
     NotifyBackground = { fg = c.fg, bg = c.bg },
     --- Border
-    NotifyERRORBorder = { fg = util.darken(c.error, 0.3), bg = options.transparent and c.none or c.bg },
-    NotifyWARNBorder = { fg = util.darken(c.warning, 0.3), bg = options.transparent and c.none or c.bg },
-    NotifyINFOBorder = { fg = util.darken(c.info, 0.3), bg = options.transparent and c.none or c.bg },
-    NotifyDEBUGBorder = { fg = util.darken(c.comment, 0.3), bg = options.transparent and c.none or c.bg },
-    NotifyTRACEBorder = { fg = util.darken(c.purple, 0.3), bg = options.transparent and c.none or c.bg },
+    NotifyERRORBorder = { fg = util.darken(c.error, 0.3), bg = bg_normal },
+    NotifyWARNBorder = { fg = util.darken(c.warning, 0.3), bg = bg_normal },
+    NotifyINFOBorder = { fg = util.darken(c.info, 0.3), bg = bg_normal },
+    NotifyDEBUGBorder = { fg = util.darken(c.comment, 0.3), bg = bg_normal },
+    NotifyTRACEBorder = { fg = util.darken(c.purple, 0.3), bg = bg_normal },
     --- Icons
     NotifyERRORIcon = { fg = c.error },
     NotifyWARNIcon = { fg = c.warning },
@@ -757,11 +759,11 @@ function M.setup()
     NotifyDEBUGTitle = { fg = c.comment },
     NotifyTRACETitle = { fg = c.purple },
     --- Body
-    NotifyERRORBody = { fg = c.fg, bg = options.transparent and c.none or c.bg },
-    NotifyWARNBody = { fg = c.fg, bg = options.transparent and c.none or c.bg },
-    NotifyINFOBody = { fg = c.fg, bg = options.transparent and c.none or c.bg },
-    NotifyDEBUGBody = { fg = c.fg, bg = options.transparent and c.none or c.bg },
-    NotifyTRACEBody = { fg = c.fg, bg = options.transparent and c.none or c.bg },
+    NotifyERRORBody = { fg = c.fg, bg = bg_normal },
+    NotifyWARNBody = { fg = c.fg, bg = bg_normal },
+    NotifyINFOBody = { fg = c.fg, bg = bg_normal },
+    NotifyDEBUGBody = { fg = c.fg, bg = bg_normal },
+    NotifyTRACEBody = { fg = c.fg, bg = bg_normal },
 
     -- Mini
     MiniAnimateCursor = { reverse = true, nocombine = true },
@@ -861,8 +863,8 @@ function M.setup()
     MiniStarterCurrent = { nocombine = true },
     MiniStarterFooter = { fg = c.yellow, italic = true },
     MiniStarterHeader = { fg = c.blue },
-    MiniStarterInactive = { fg = c.comment, style = options.styles.comments },
-    MiniStarterItem = { fg = c.fg, bg = options.transparent and c.none or c.bg },
+    MiniStarterInactive = { fg = c.comment, style = styles.comments },
+    MiniStarterItem = { fg = c.fg, bg = bg_normal },
     MiniStarterItemBullet = { fg = c.border_highlight },
     MiniStarterItemPrefix = { fg = c.warning },
     MiniStarterSection = { fg = c.blue1 },
@@ -953,7 +955,7 @@ function M.setup()
   for kind, link in pairs(kinds) do
     local base = "LspKind" .. kind
     theme.highlights[base] = { link = link }
-    for _, plugin in pairs(kind_groups) do
+    for _, plugin in ipairs(kind_groups) do
       theme.highlights[plugin:format(kind)] = { link = base }
     end
   end
@@ -966,39 +968,26 @@ function M.setup()
   end
   theme.highlights["Headline"] = { link = "Headline1" }
 
-  if not vim.diagnostic then
-    local severity_map = {
-      Error = "Error",
-      Warn = "Warning",
-      Info = "Information",
-      Hint = "Hint",
-    }
-    local types = { "Default", "VirtualText", "Underline" }
-    for _, type in ipairs(types) do
-      for snew, sold in pairs(severity_map) do
-        theme.highlights["LspDiagnostics" .. type .. sold] = {
-          link = "Diagnostic" .. (type == "Default" and "" or type) .. snew,
-        }
-      end
-    end
-  end
-
   ---@type table<string, table>
   theme.defer = {}
 
   if options.hide_inactive_statusline then
-    local inactive = { underline = true, bg = c.none, fg = c.bg, sp = c.border }
+    -- each group needs its own table: they are mutated in place when applied,
+    -- and a shared one would be inverted once per group in the day style
+    local function inactive()
+      return { underline = true, bg = c.none, fg = c.bg, sp = c.border }
+    end
 
     -- StatusLineNC
-    theme.highlights.StatusLineNC = inactive
+    theme.highlights.StatusLineNC = inactive()
 
     -- LuaLine
     for _, section in ipairs({ "a", "b", "c" }) do
-      theme.defer["lualine_" .. section .. "_inactive"] = inactive
+      theme.defer["lualine_" .. section .. "_inactive"] = inactive()
     end
 
     -- mini.statusline
-    theme.highlights.MiniStatuslineInactive = inactive
+    theme.highlights.MiniStatuslineInactive = inactive()
   end
 
   options.on_highlights(theme.highlights, theme.colors)
@@ -1006,6 +995,7 @@ function M.setup()
   if config.is_day() then
     util.invert_colors(theme.colors)
     util.invert_highlights(theme.highlights)
+    util.invert_highlights(theme.defer)
   end
 
   return theme

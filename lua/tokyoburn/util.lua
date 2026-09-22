@@ -4,10 +4,34 @@ M.bg = "#000000"
 M.fg = "#ffffff"
 M.day_brightness = 0.3
 
----@param c  string
+local set_hl = vim.api.nvim_set_hl
+local floor = math.floor
+
+-- `blend` is a pure function of (foreground, background, alpha), and the theme
+-- asks for the same combinations over and over (e.g. `darken(bg_highlight, 0.4)`
+-- is used by a dozen bufferline groups), so results are memoised for good.
+local blend_cache = {}
+
+-- `invert_color` is far more expensive (a full hex -> HSLuv -> hex round trip)
+-- and gets called for every fg/bg/sp of every highlight when the day style is
+-- active. The palette only holds a few dozen distinct colors, so caching turns
+-- thousands of conversions into a few dozen.
+local invert_cache = {}
+local invert_cache_brightness = M.day_brightness
+
+---@param c string
 local function hexToRgb(c)
-  c = string.lower(c)
-  return { tonumber(c:sub(2, 3), 16), tonumber(c:sub(4, 5), 16), tonumber(c:sub(6, 7), 16) }
+  return tonumber(c:sub(2, 3), 16), tonumber(c:sub(4, 5), 16), tonumber(c:sub(6, 7), 16)
+end
+
+local function channel(fg, bg, alpha)
+  local ret = alpha * fg + (1 - alpha) * bg
+  if ret < 0 then
+    ret = 0
+  elseif ret > 255 then
+    ret = 255
+  end
+  return floor(ret + 0.5)
 end
 
 ---@param foreground string foreground color
@@ -15,15 +39,19 @@ end
 ---@param alpha number|string number between 0 and 1. 0 results in bg, 1 results in fg
 function M.blend(foreground, background, alpha)
   alpha = type(alpha) == "string" and (tonumber(alpha, 16) / 0xff) or alpha
-  local bg = hexToRgb(background)
-  local fg = hexToRgb(foreground)
 
-  local blendChannel = function(i)
-    local ret = (alpha * fg[i] + ((1 - alpha) * bg[i]))
-    return math.floor(math.min(math.max(0, ret), 255) + 0.5)
+  local key = foreground .. background .. alpha
+  local cached = blend_cache[key]
+  if cached then
+    return cached
   end
 
-  return string.format("#%02x%02x%02x", blendChannel(1), blendChannel(2), blendChannel(3))
+  local fr, fg, fb = hexToRgb(foreground)
+  local br, bg, bb = hexToRgb(background)
+
+  local hex = string.format("#%02x%02x%02x", channel(fr, br, alpha), channel(fg, bg, alpha), channel(fb, bb, alpha))
+  blend_cache[key] = hex
+  return hex
 end
 
 function M.darken(hex, amount, bg)
@@ -35,32 +63,50 @@ function M.lighten(hex, amount, fg)
 end
 
 function M.invert_color(color)
-  local hsluv = require("tokyoburn.hsluv")
-  if color ~= "NONE" then
-    local hsl = hsluv.hex_to_hsluv(color)
-    hsl[3] = 100 - hsl[3]
-    if hsl[3] < 40 then
-      hsl[3] = hsl[3] + (100 - hsl[3]) * M.day_brightness
-    end
-    return hsluv.hsluv_to_hex(hsl)
+  if color == "NONE" then
+    return color
   end
-  return color
+
+  -- `day_brightness` is configurable, so drop the cache whenever it changes
+  if invert_cache_brightness ~= M.day_brightness then
+    invert_cache = {}
+    invert_cache_brightness = M.day_brightness
+  end
+
+  local cached = invert_cache[color]
+  if cached then
+    return cached
+  end
+
+  local hsluv = require("tokyoburn.hsluv")
+  local hsl = hsluv.hex_to_hsluv(color)
+  hsl[3] = 100 - hsl[3]
+  if hsl[3] < 40 then
+    hsl[3] = hsl[3] + (100 - hsl[3]) * M.day_brightness
+  end
+
+  local inverted = hsluv.hsluv_to_hex(hsl)
+  invert_cache[color] = inverted
+  return inverted
 end
 
 ---@param group string
 function M.highlight(group, hl)
-  if hl.style then
-    if type(hl.style) == "table" then
-      hl = vim.tbl_extend("force", hl, hl.style)
-    elseif hl.style:lower() ~= "none" then
+  local style = hl.style
+  if style then
+    if type(style) == "table" then
+      for k, v in pairs(style) do
+        hl[k] = v
+      end
+    elseif style:lower() ~= "none" then
       -- handle old string style definitions
-      for s in string.gmatch(hl.style, "([^,]+)") do
+      for s in style:gmatch("([^,]+)") do
         hl[s] = true
       end
     end
     hl.style = nil
   end
-  vim.api.nvim_set_hl(0, group, hl)
+  set_hl(0, group, hl)
 end
 
 ---@param config Config
@@ -73,14 +119,15 @@ function M.autocmds(config)
       vim.api.nvim_del_augroup_by_id(group)
     end,
   })
+
+  local sidebar_whl = "Normal:NormalSB,SignColumn:SignColumnSB"
   local function set_whl()
-    local win = vim.api.nvim_get_current_win()
-    local whl = vim.split(vim.wo[win].winhighlight, ",")
-    vim.list_extend(whl, { "Normal:NormalSB", "SignColumn:SignColumnSB" })
-    whl = vim.tbl_filter(function(hl)
-      return hl ~= ""
-    end, whl)
-    vim.opt_local.winhighlight = table.concat(whl, ",")
+    local whl = vim.wo.winhighlight
+    if whl == "" then
+      vim.wo.winhighlight = sidebar_whl
+    elseif not whl:find("NormalSB", 1, true) then
+      vim.wo.winhighlight = whl .. "," .. sidebar_whl
+    end
   end
 
   vim.api.nvim_create_autocmd("FileType", {
@@ -94,20 +141,6 @@ function M.autocmds(config)
       callback = set_whl,
     })
   end
-end
-
--- Simple string interpolation.
---
--- Example template: "${name} is ${value}"
---
----@param str string template string
----@param table table key value pairs to replace in the string
-function M.template(str, table)
-  return (
-    str:gsub("($%b{})", function(w)
-      return vim.tbl_get(table, unpack(vim.split(w:sub(3, -2), ".", { plain = true }))) or w
-    end)
-  )
 end
 
 function M.syntax(syntax)
@@ -160,15 +193,16 @@ end
 
 ---@param hls Highlights
 function M.invert_highlights(hls)
+  local invert = M.invert_color
   for _, hl in pairs(hls) do
     if hl.fg then
-      hl.fg = M.invert_color(hl.fg)
+      hl.fg = invert(hl.fg)
     end
     if hl.bg then
-      hl.bg = M.invert_color(hl.bg)
+      hl.bg = invert(hl.bg)
     end
     if hl.sp then
-      hl.sp = M.invert_color(hl.sp)
+      hl.sp = invert(hl.sp)
     end
   end
 end
@@ -185,16 +219,18 @@ function M.load(theme)
 
   M.syntax(theme.highlights)
 
-  -- vim.api.nvim_set_hl_ns(M.ns)
   if theme.config.terminal_colors then
     M.terminal(theme.colors)
   end
 
   M.autocmds(theme.config)
 
-  vim.defer_fn(function()
-    M.syntax(theme.defer)
-  end, 100)
+  -- only pay for a timer when there is actually something deferred
+  if theme.defer and next(theme.defer) ~= nil then
+    vim.defer_fn(function()
+      M.syntax(theme.defer)
+    end, 100)
+  end
 end
 
 return M

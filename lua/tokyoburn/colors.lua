@@ -64,19 +64,19 @@ M.day = M.night
 function M.setup(opts)
   opts = opts or {}
   local config = require("tokyoburn.config")
+  local options = config.options
+  local is_day = config.is_day()
 
-  local style = config.is_day() and config.options.light_style or config.options.style
-  local palette = M[style] or {}
-  if type(palette) == "function" then
-    palette = palette()
-  end
+  local style = is_day and options.light_style or options.style
 
   -- Color Palette
+  -- `deepcopy` is required: the nested tables (`git`, `gitSigns`) are mutated
+  -- below, and a plain merge would hand out references into `M.default`.
   ---@class ColorScheme: Palette
-  local colors = vim.tbl_deep_extend("force", vim.deepcopy(M.default), palette)
+  local colors = vim.tbl_deep_extend("force", vim.deepcopy(M.default), M[style] or {})
 
   util.bg = colors.bg
-  util.day_brightness = config.options.day_brightness
+  util.day_brightness = options.day_brightness
 
   colors.diff = {
     add = util.darken(colors.green2, 0.15),
@@ -95,18 +95,19 @@ function M.setup(opts)
   colors.bg_statusline = colors.none
 
   -- Sidebar and Floats are configurable
-  colors.bg_sidebar = config.options.styles.sidebars == "transparent" and colors.none
-    or config.options.styles.sidebars == "dark" and colors.bg_dark
+  local styles = options.styles
+  colors.bg_sidebar = styles.sidebars == "transparent" and colors.none
+    or styles.sidebars == "dark" and colors.bg_dark
     or colors.bg
 
-  colors.bg_float = config.options.styles.floats == "transparent" and colors.none
-    or config.options.styles.floats == "dark" and colors.bg_dark
+  colors.bg_float = styles.floats == "transparent" and colors.none
+    or styles.floats == "dark" and colors.bg_dark
     or colors.bg
 
   colors.bg_visual = util.darken(colors.red1, 0.4)
   colors.bg_search = util.darken(colors.yellow, 0.45)
   colors.fg_sidebar = colors.fg_dark
-  -- colors.fg_float = config.options.styles.floats == "dark" and colors.fg_dark or colors.fg
+  -- colors.fg_float = styles.floats == "dark" and colors.fg_dark or colors.fg
   colors.fg_float = colors.fg
 
   colors.error = colors.red1
@@ -120,8 +121,8 @@ function M.setup(opts)
     delete = util.darken(colors.red1, 0.45),
   }
 
-  config.options.on_colors(colors)
-  if opts.transform and config.is_day() then
+  options.on_colors(colors)
+  if opts.transform and is_day then
     util.invert_colors(colors)
   end
 

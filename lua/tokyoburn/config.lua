@@ -43,8 +43,10 @@ M.options = {}
 
 -- The `storm` and `moon` styles were removed; map them to `night` so existing
 -- configs keep working (storm = moon = night).
+local style_keys = { "style", "light_style" }
+
 local function normalize(options)
-  for _, key in ipairs({ "style", "light_style" }) do
+  for _, key in ipairs(style_keys) do
     if options[key] == "storm" or options[key] == "moon" then
       options[key] = "night"
     end
@@ -54,12 +56,14 @@ end
 
 ---@param options Config|nil
 function M.setup(options)
-  M.options = normalize(vim.tbl_deep_extend("force", {}, defaults, options or {}))
+  -- `defaults` is copied rather than merged into `{}`: a shallow merge would
+  -- share the nested tables (`styles`, `sidebars`) with the module constant
+  M.options = normalize(vim.tbl_deep_extend("force", vim.deepcopy(defaults), options or {}))
 end
 
 ---@param options Config|nil
 function M.extend(options)
-  M.options = normalize(vim.tbl_deep_extend("force", {}, M.options or defaults, options or {}))
+  M.options = normalize(vim.tbl_deep_extend("force", M.options or vim.deepcopy(defaults), options or {}))
 end
 
 function M.is_day()
