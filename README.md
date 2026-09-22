@@ -117,6 +117,13 @@ require("tokyoburn").setup({
   hide_inactive_statusline = false, -- Enabling this option, will hide inactive statuslines and replace them with a thin border instead. Should work with the standard **StatusLine** and **LuaLine**.
   dim_inactive = false, -- dims inactive windows
   lualine_bold = false, -- When `true`, section headers in the lualine theme will be bold
+  -- Vim marks what a pane has and its neighbours lack as an *addition* in every
+  -- pane, so left-only and right-only lines look alike. When `true`, the
+  -- rightmost diff window is taken as the new file and keeps the green
+  -- background, and every other diff pane turns red. Works for `nvim -d` and
+  -- for diffview.nvim, whose file panel is not a diff window and is left alone.
+  -- Set `false` to disable, or if your new file is on the left.
+  diff_right_is_new = true,
 
   --- You can override specific color groups to use other groups or a hex color
   --- function will be called with a ColorScheme table

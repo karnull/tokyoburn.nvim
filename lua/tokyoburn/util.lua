@@ -109,6 +109,123 @@ function M.highlight(group, hl)
   set_hl(0, group, hl)
 end
 
+-- Vim has no notion of an "old" and a "new" side of a diff. In every pane it
+-- paints whatever that pane has and the others lack with DiffAdd, so lines that
+-- exist only on the left come out green, exactly like lines added on the right.
+-- Repainting those groups in all but the rightmost pane is the only way to tell
+-- the sides apart.
+--
+-- DiffChange and DiffText follow DiffAdd for the same reason: a partly-changed
+-- line is an addition on one side and a removal on the other, so the changed
+-- span has to flip with it.
+local OLD_PANE_WHL =
+  "DiffAdd:TokyoburnDiffRemoved,DiffChange:TokyoburnDiffRemoved,DiffText:TokyoburnDiffRemovedText"
+
+-- the source groups of the above. On an old pane any mapping of these has to
+-- go, whoever wrote it, because ours has to be the one that wins; diffview.nvim
+-- always points them at its own `DiffviewDiff*` groups, which is exactly why
+-- both of its panes came out green.
+local OVERRIDDEN = { DiffAdd = true, DiffChange = true, DiffText = true }
+
+---@return integer[] non-floating windows of the current tabpage
+local function tab_windows()
+  local wins = {}
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_config(win).relative == "" then
+      wins[#wins + 1] = win
+    end
+  end
+  return wins
+end
+
+---@param win integer
+---@param old boolean paint this window as an old side of the diff
+local function remap_diff(win, old)
+  local current = vim.wo[win].winhighlight
+
+  -- the common case by far: a window nobody has touched
+  if current == "" then
+    if old then
+      vim.wo[win].winhighlight = OLD_PANE_WHL
+    end
+    return
+  end
+
+  local kept = {}
+  for entry in current:gmatch("[^,]+") do
+    local from, to = entry:match("^([^:]*):(.*)$")
+    -- On an old pane we take these three over outright. Anywhere else we drop
+    -- only our own mappings and leave the rest -- diffview.nvim's
+    -- `DiffAdd:DiffviewDiffAdd` and the sidebars' `Normal:NormalSB` are theirs
+    -- to set, and a new pane wants diffview's back.
+    local ours = old and OVERRIDDEN[from] or vim.startswith(to or "", "TokyoburnDiff")
+    if not ours then
+      kept[#kept + 1] = entry
+    end
+  end
+  if old then
+    kept[#kept + 1] = OLD_PANE_WHL
+  end
+
+  local value = table.concat(kept, ",")
+  if current ~= value then
+    vim.wo[win].winhighlight = value
+  end
+end
+
+-- winhighlight is window-local and outlives both the colorscheme and diff mode,
+-- so every window ever marked has to be handed back, not just this tabpage's
+local function clear_diff_panes()
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_is_valid(win) then
+      remap_diff(win, false)
+    end
+  end
+end
+
+local function mark_diff_panes()
+  if vim.g.colors_name ~= "tokyoburn" then
+    return
+  end
+
+  -- Diffview tabpages go through here too. It knows which revision is older,
+  -- but it only acts on that with `enhanced_diff_hl`, and even then it hands
+  -- both panes the same DiffChange and DiffText, so a changed line reads green
+  -- on both sides. Its file panel is not a diff window, so it drops out below
+  -- with the sidebars and never counts as a pane.
+  local wins = tab_windows()
+
+  local diffs = {}
+  for _, win in ipairs(wins) do
+    if vim.wo[win].diff then
+      diffs[#diffs + 1] = win
+    else
+      remap_diff(win, false)
+    end
+  end
+
+  -- left as nil for a lone diff window: it has nothing to be the other side of,
+  -- so no pane is singled out and it keeps the plain green
+  local new_pane
+  if #diffs > 1 then
+    -- rightmost is the new file; bottom-most breaks the tie between panes in
+    -- the same column, which is what a horizontal `:diffsplit` leaves behind
+    new_pane = diffs[1]
+    local pos = vim.api.nvim_win_get_position(new_pane)
+    local new_row, new_col = pos[1], pos[2]
+    for i = 2, #diffs do
+      pos = vim.api.nvim_win_get_position(diffs[i])
+      if pos[2] > new_col or (pos[2] == new_col and pos[1] > new_row) then
+        new_pane, new_row, new_col = diffs[i], pos[1], pos[2]
+      end
+    end
+  end
+
+  for _, win in ipairs(diffs) do
+    remap_diff(win, new_pane ~= nil and win ~= new_pane)
+  end
+end
+
 ---@param config Config
 function M.autocmds(config)
   local group = vim.api.nvim_create_augroup("tokyoburn", { clear = true })
@@ -116,9 +233,53 @@ function M.autocmds(config)
   vim.api.nvim_create_autocmd("ColorSchemePre", {
     group = group,
     callback = function()
+      -- winhighlight outlives the colorscheme, so hand the windows back
+      -- untouched rather than pointing them at a group about to be cleared
+      clear_diff_panes()
       vim.api.nvim_del_augroup_by_id(group)
     end,
   })
+
+  if config.diff_right_is_new then
+    -- these events arrive in bursts (opening a diff fires WinNew, WinEnter and
+    -- OptionSet back to back), and only the layout they settle on matters, so
+    -- coalesce them into a single pass
+    local queued = false
+    local update = function()
+      if queued then
+        return
+      end
+      queued = true
+      -- deferred: on WinClosed the window is still in the tabpage list, and a
+      -- `:diffsplit` has not finished moving windows about yet either
+      vim.schedule(function()
+        queued = false
+        mark_diff_panes()
+      end)
+    end
+    local events = { "VimEnter", "WinEnter", "WinNew", "WinClosed", "TabEnter" }
+    -- WinResized covers the layout changing under a window that stays current,
+    -- which `:wincmd H` / `:wincmd r` do without firing any of the others. It
+    -- only exists from 0.9, and the plugin still supports 0.8.
+    if vim.fn.exists("##WinResized") == 1 then
+      events[#events + 1] = "WinResized"
+    end
+    vim.api.nvim_create_autocmd(events, { group = group, callback = update })
+    vim.api.nvim_create_autocmd("OptionSet", {
+      group = group,
+      pattern = "diff",
+      callback = update,
+    })
+    -- diffview.nvim reapplies its own window options, `winhighlight` included,
+    -- every time it puts a file in a pane, which wipes the remap. These fire
+    -- after it has done so. They cost nothing when diffview is not installed.
+    vim.api.nvim_create_autocmd("User", {
+      group = group,
+      pattern = { "DiffviewDiffBufWinEnter", "DiffviewViewPostLayout", "DiffviewViewOpened" },
+      callback = update,
+    })
+    update() -- a diff may already be open when the colorscheme loads
+  end
 
   local sidebar_whl = "Normal:NormalSB,SignColumn:SignColumnSB"
   local function set_whl()

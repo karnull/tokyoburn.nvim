@@ -46,6 +46,19 @@ M.default = {
   pastel_yellow = "#ffe9a8",
   pastel_orange = "#ffcb98",
   pastel_red = "#ffa3a3",
+  -- Diff mode works from these two, stepped onto the theme ground in `M.setup`.
+  --
+  -- Both are far too bright to use as line backgrounds directly (text sits at
+  -- ~3:1 on them), so `M.setup` blends them down the way `bg_visual` and
+  -- `bg_search` are built, which is also what keeps them in the same family as
+  -- the rest of the palette.
+  --
+  -- The red is deliberately kept darker than the green rather than matched to
+  -- it. Red-green deficiency flattens these two hues towards each other, so the
+  -- lightness gap is what carries the distinction: it holds them ~22 dE apart
+  -- under deuteranopia, where an equal-lightness pair would collapse to ~8.
+  diff_red = "#ff007f",
+  diff_green = "#228b22",
   git = { change = "#8ec2ff", add = "#a6e3a1", delete = "#ff8088" },
   gitSigns = {
     add = "#5f8f57",
@@ -78,11 +91,19 @@ function M.setup(opts)
   util.bg = colors.bg
   util.day_brightness = options.day_brightness
 
+  -- Two pairs, one per side of a diff: the new side (rightmost window) is
+  -- green, every older side red. Within a pair the line background is the
+  -- quieter step and the `*_text` step is brighter, so the words that actually
+  -- differ stand out from the rest of their line. The two `*_text` steps are
+  -- about as far from their own line background as each other (~1.4:1), which
+  -- is what keeps the two sides reading as the same design.
   colors.diff = {
-    add = util.darken(colors.green2, 0.15),
-    delete = util.darken(colors.red1, 0.15),
-    change = util.darken(colors.blue7, 0.15),  -- b l u e
-    text = colors.blue7,  -- b l u e
+    -- a partly-changed line carries the same background as a wholly new one
+    add = util.darken(colors.diff_green, 0.52),
+    change = util.darken(colors.diff_green, 0.52),
+    text = util.darken(colors.diff_green, 0.78),
+    delete = util.darken(colors.diff_red, 0.3),
+    delete_text = util.darken(colors.diff_red, 0.5),
   }
 
   colors.git.ignore = colors.dark3

@@ -39,10 +39,32 @@ function M.setup()
     CursorColumn = { bg = c.bg_highlight }, -- Screen-column at the cursor, when 'cursorcolumn' is set.
     CursorLine = { bg = c.red2 }, -- Screen-line at the cursor, when 'cursorline' is set.  Low-priority if foreground (ctermfg OR guifg) is not set.
     Directory = { fg = c.red1 }, -- directory names (and other special names in listings)
+    -- Vim has no notion of an old and a new side, so these three are simply
+    -- "this window has something the others do not" and come out green in every
+    -- pane. `util.autocmds` repaints all but the rightmost pane with the
+    -- Tokyoburn* groups below, so only the new side stays green.
     DiffAdd = { bg = c.diff.add }, -- diff mode: Added line |diff.txt|
     DiffChange = { bg = c.diff.change }, -- diff mode: Changed line |diff.txt|
-    DiffDelete = { bg = c.diff.delete }, -- diff mode: Deleted line |diff.txt|
-    DiffText = { bg = c.diff.text }, -- diff mode: Changed text within a changed line |diff.txt|
+    -- bold gives the changed span a cue that does not depend on colour at all
+    DiffText = { bg = c.diff.text, bold = true }, -- diff mode: Changed text within a changed line |diff.txt|
+    -- Filler only: the placeholder a window shows where another one has lines it
+    -- lacks. No background, and the fill characters are painted in the window
+    -- background so the block reads as plain empty space.
+    DiffDelete = { bg = c.none, fg = c.bg }, -- diff mode: Deleted line |diff.txt|
+    -- The red half of the pair above, for panes that are not the new side. Not
+    -- stock groups: they exist only as winhighlight targets, see
+    -- `diff_right_is_new` in config.lua.
+    TokyoburnDiffRemoved = { bg = c.diff.delete },
+    TokyoburnDiffRemovedText = { bg = c.diff.delete_text, bold = true },
+    -- diffview.nvim points its panes at its own copies of the diff groups, so
+    -- these have to match the ones above or its windows come out unstyled.
+    -- `util.autocmds` overrides the add/change/text mapping on its old pane the
+    -- same way it does for `nvim -d`; what is left here is the filler, plus the
+    -- group diffview swaps in for itself under `enhanced_diff_hl`.
+    DiffviewDiffAddAsDelete = { link = "TokyoburnDiffRemoved" },
+    -- diffview's own filler, in both panes: same empty treatment as DiffDelete
+    DiffviewDiffDelete = { bg = c.none, fg = c.bg },
+    DiffviewDiffDeleteDim = { bg = c.none, fg = c.bg },
     EndOfBuffer = { fg = c.bg }, -- filler lines (~) after the end of the buffer.  By default, this is highlighted like |hl-NonText|.
     -- TermCursor  = { }, -- cursor in a focused terminal
     -- TermCursorNC= { }, -- cursor in an unfocused terminal
@@ -318,7 +340,9 @@ function M.setup()
     ["@markup.list.checked"] = { fg = c.green1 }, -- For brackets and parens.
 
     ["@diff.plus"] = { link = "DiffAdd" },
-    ["@diff.minus"] = { link = "DiffDelete" },
+    -- not linked to DiffDelete: that is now transparent filler, but a `-` line in
+    -- a patch file is real removed content and still wants the red
+    ["@diff.minus"] = { bg = c.diff.delete },
     ["@diff.delta"] = { link = "DiffChange" },
 
     ["@module"] = { link = "Include" },
@@ -431,8 +455,10 @@ function M.setup()
     NeogitHunkHeader = { bg = c.bg_highlight, fg = c.fg },
     NeogitHunkHeaderHighlight = { bg = c.fg_gutter, fg = c.blue },
     NeogitDiffContextHighlight = { bg = util.darken(c.fg_gutter, 0.5), fg = c.fg_dark },
-    NeogitDiffDeleteHighlight = { fg = c.git.delete, bg = c.diff.delete },
-    NeogitDiffAddHighlight = { fg = c.git.add, bg = c.diff.add },
+    -- normal fg on both: the background already carries add/delete, and tinting
+    -- the text to match it only costs contrast (3.8:1 vs 7.6:1 on delete)
+    NeogitDiffDeleteHighlight = { fg = c.fg, bg = c.diff.delete },
+    NeogitDiffAddHighlight = { fg = c.fg, bg = c.diff.add },
 
     -- Neotest
     NeotestPassed = { fg = c.green },
@@ -796,10 +822,14 @@ function M.setup()
     MiniDiffSignAdd = { fg = c.gitSigns.add },
     MiniDiffSignChange = { fg = c.gitSigns.change },
     MiniDiffSignDelete = { fg = c.gitSigns.delete },
+    -- only `OverAdd` is buffer text; `OverChange`, `OverContext` and
+    -- `OverDelete` all render the *reference* (i.e. the old side) in the
+    -- overlay, so they take the red pair rather than mini.diff's stock links to
+    -- DiffText/DiffChange, which are this theme's new side
     MiniDiffOverAdd = { link = "DiffAdd" },
-    MiniDiffOverChange = { link = "DiffText" },
-    MiniDiffOverContext = { link = "DiffChange" },
-    MiniDiffOverDelete = { link = "DiffDelete" },
+    MiniDiffOverChange = { link = "TokyoburnDiffRemovedText" },
+    MiniDiffOverContext = { link = "TokyoburnDiffRemoved" },
+    MiniDiffOverDelete = { link = "TokyoburnDiffRemoved" },
 
     MiniFilesBorder = { link = "FloatBorder" },
     MiniFilesBorderModified = { link = "DiagnosticFloatingWarn" },

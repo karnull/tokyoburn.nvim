@@ -24,6 +24,20 @@ local defaults = {
   hide_inactive_statusline = false, -- Enabling this option, will hide inactive statuslines and replace them with a thin border instead. Should work with the standard **StatusLine** and **LuaLine**.
   dim_inactive = false, -- dims inactive windows
   lualine_bold = false, -- When `true`, section headers in the lualine theme will be bold
+  -- Vim paints whatever a diff window has and its neighbours lack with DiffAdd,
+  -- in *every* pane, so a line that exists only on the left looks identical to
+  -- one added on the right. When `true`, the rightmost diff window is treated
+  -- as the new file and keeps the green DiffAdd/DiffChange/DiffText, while
+  -- every other diff window in the tabpage repaints them red via
+  -- `winhighlight`.
+  --
+  -- This covers `nvim -d` and diffview.nvim alike. diffview does know which
+  -- revision is older, but it only acts on that under `enhanced_diff_hl`, and
+  -- even then both its panes share one DiffChange and DiffText, so a changed
+  -- line reads green on both sides. Its file panel is not a diff window and is
+  -- left alone. Set `false` to disable, or if your diffs put the new file on
+  -- the left.
+  diff_right_is_new = true,
 
   --- You can override specific color groups to use other groups or a hex color
   --- function will be called with a ColorScheme table
@@ -50,6 +64,13 @@ local function normalize(options)
     if options[key] == "storm" or options[key] == "moon" then
       options[key] = "night"
     end
+  end
+  -- `diff_left_is_old` only ever described a two-pane diff; the option now reads
+  -- from the other end so that it still means something with three or more.
+  -- Same boolean either way, so old configs keep working.
+  if options.diff_left_is_old ~= nil then
+    options.diff_right_is_new = options.diff_left_is_old
+    options.diff_left_is_old = nil
   end
   return options
 end
