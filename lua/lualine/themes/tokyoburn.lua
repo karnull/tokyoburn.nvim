@@ -30,8 +30,8 @@ tokyoburn.replace = {
 }
 
 tokyoburn.terminal = {
-  a = {bg = colors.green1, fg = colors.black },
-  b = {bg = colors.black , fg=colors.green1 },
+  a = { bg = colors.cyan, fg = colors.black },
+  b = { bg = colors.black, fg = colors.cyan },
 }
 
 tokyoburn.inactive = {

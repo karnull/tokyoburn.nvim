@@ -31,13 +31,14 @@ function M.setup()
 
   theme.highlights = {
     Comment = { fg = c.comment, style = styles.comments }, -- any comment
-    ColorColumn = { bg = c.red2 }, -- used for the columns set with 'colorcolumn'
+    -- deliberately the same step as the cursor line: both only mark a position
+    ColorColumn = { bg = c.bg_cursorline }, -- used for the columns set with 'colorcolumn'
     Conceal = { fg = c.dark5 }, -- placeholder characters substituted for concealed text (see 'conceallevel')
     Cursor = { fg = c.bg, bg = c.fg }, -- character under the cursor
     lCursor = { fg = c.bg, bg = c.fg }, -- the character under the cursor when |language-mapping| is used (see 'guicursor')
     CursorIM = { fg = c.bg, bg = c.fg }, -- like Cursor, but used when in IME mode |CursorIM|
-    CursorColumn = { bg = c.bg_highlight }, -- Screen-column at the cursor, when 'cursorcolumn' is set.
-    CursorLine = { bg = c.red2 }, -- Screen-line at the cursor, when 'cursorline' is set.  Low-priority if foreground (ctermfg OR guifg) is not set.
+    CursorColumn = { bg = c.bg_cursorline }, -- Screen-column at the cursor, when 'cursorcolumn' is set.
+    CursorLine = { bg = c.bg_cursorline }, -- Screen-line at the cursor, when 'cursorline' is set.  Low-priority if foreground (ctermfg OR guifg) is not set.
     Directory = { fg = c.red1 }, -- directory names (and other special names in listings)
     -- Vim has no notion of an old and a new side, so these three are simply
     -- "this window has something the others do not" and come out green in every
@@ -77,10 +78,10 @@ function M.setup()
     SignColumnSB = { bg = c.bg_sidebar, fg = c.fg_gutter }, -- column where |signs| are displayed
     Substitute = { bg = c.red, fg = c.black }, -- |:substitute| replacement text highlighting
     LineNr = { fg = c.fg_LineNr }, -- Line number for ":number" and ":#" commands, and when 'number' or 'relativenumber' option is set.
-    CursorLineNr = { fg = c.orange, bold = true }, -- Like LineNr when 'cursorline' or 'relativenumber' is set for the cursor line.
+    CursorLineNr = { fg = c.red2, bold = true }, -- Like LineNr when 'cursorline' or 'relativenumber' is set for the cursor line.
     LineNrAbove = { fg = c.fg_gutter },
     LineNrBelow = { fg = c.fg_gutter },
-    MatchParen = { fg = c.orange, bold = true }, -- The character under the cursor or just before it, if it is a paired bracket, and its match. |pi_paren.txt|
+    MatchParen = { fg = c.rose, bold = true }, -- The character under the cursor or just before it, if it is a paired bracket, and its match. |pi_paren.txt|
     ModeMsg = { fg = c.fg_dark, bold = true }, -- 'showmode' message (e.g., "-- INSERT -- ")
     MsgArea = { fg = c.fg_dark }, -- Area for messages and cmdline
     -- MsgSeparator= { }, -- Separator for scrolled messages, `msgsep` flag of 'display'
@@ -99,7 +100,7 @@ function M.setup()
     Question = { fg = c.blue }, -- |hit-enter| prompt and yes/no questions
     QuickFixLine = { bg = c.bg_visual, bold = true }, -- Current |quickfix| item in the quickfix window. Combined with |hl-CursorLine| when the cursor is there.
     Search = { bg = c.bg_search, fg = c.fg }, -- Last search pattern highlighting (see 'hlsearch').  Also used for similar items that need to stand out.
-    IncSearch = { bg = c.orange, fg = c.black }, -- 'incsearch' highlighting; also used for the text replaced with ":s///c"
+    IncSearch = { bg = c.rose, fg = c.black }, -- 'incsearch' highlighting; also used for the text replaced with ":s///c"
     CurSearch = { link = "IncSearch" },
     SpecialKey = { fg = c.dark3 }, -- Unprintable characters: text displayed differently from what it really is.  But not 'listchars' whitespace. |hl-Whitespace|
     SpellBad = { sp = c.error, undercurl = true }, -- Word that is not recognized by the spellchecker. |spell| Combined with the highlighting used otherwise.
@@ -127,14 +128,14 @@ function M.setup()
     -- Uncomment and edit if you want more specific syntax highlighting.
 
     Constant = { fg = c.orange }, -- (preferred) any constant
-    String = { fg = c.green }, --   a string constant: "this is a string"
+    String = { fg = c.yellow }, --   a string constant: "this is a string"
     Character = { fg = c.blue }, --  a character constant: 'c', '\n'
     -- Number        = { }, --   a number constant: 234, 0xff
     -- Boolean       = { }, --  a boolean constant: TRUE, false
     -- Float         = { }, --    a floating point constant: 2.3e10
 
     Identifier = { fg = c.magenta, style = styles.variables }, -- (preferred) any variable name
-    Function = { fg = c.blue, style = styles.functions }, -- function name (also: methods for classes)
+    Function = { fg = c.red2, style = styles.functions }, -- function name (also: methods for classes)
 
     Statement = { fg = c.red1 }, -- (preferred) any statement
     -- Conditional   = { }, --  if, then, else, endif, switch, etc.
@@ -144,7 +145,7 @@ function M.setup()
     Keyword = { fg = c.purple , style = styles.keywords }, --  any other keyword
     -- Exception     = { }, --  try, catch, throw
 
-    PreProc = { fg = c.yellow }, -- (preferred) generic Preprocessor
+    PreProc = { fg = c.magenta2 }, -- (preferred) generic Preprocessor
     -- Include       = { }, --  preprocessor #include
     -- Define        = { }, --   preprocessor #define
     -- Macro         = { }, --    same as Define
@@ -170,7 +171,10 @@ function M.setup()
     -- Ignore = { }, -- (preferred) left blank, hidden  |hl-Ignore|
 
     Error = { fg = c.error }, -- (preferred) any erroneous construct
-    Todo = { bg = c.yellow, fg = c.bg }, -- (preferred) anything that needs extra attention; mostly the keywords TODO FIXME and XXX
+    -- A badge, not a tint: the bright blue block is the only cool background in
+    -- a normal buffer, so TODO/FIXME/XXX are findable by shape at a glance even
+    -- in a wall of warm comment text.
+    Todo = { bg = c.todo, fg = c.black, bold = true }, -- (preferred) anything that needs extra attention; mostly the keywords TODO FIXME and XXX
 
     qfLineNr = { fg = c.dark5 },
     qfFileName = { fg = c.blue },
@@ -287,7 +291,9 @@ function M.setup()
     ["@comment.hint"] = { fg = c.hint },
     ["@comment.info"] = { fg = c.info },
     ["@comment.warning"] = { fg = c.warning },
-    ["@comment.todo"] = { fg = c.todo },
+    -- same treatment as `Todo`, so a TODO looks the same whether the buffer is
+    -- highlighted by treesitter or by a vim syntax file
+    ["@comment.todo"] = { link = "Todo" },
     ["@markup.link.url"] = { link = "Underlined" },
     ["@type"] = { link = "Type" },
     ["@type.definition"] = { link = "Typedef" },
@@ -306,14 +312,14 @@ function M.setup()
     ["@markup.list.markdown"] = { fg = c.orange, bold = true },
 
     --- Literals
-    ["@string.documentation"] = { fg = c.yellow },
+    ["@string.documentation"] = { fg = c.orange },
     ["@string.regexp"] = { fg = c.blue6 }, -- For regexes.
     ["@string.escape"] = { fg = c.magenta }, -- For escape characters within a string.
 
     --- Functions
     ["@constructor"] = { fg = c.magenta }, -- For constructor calls and definitions: `= { }` in Lua, and Java constructors.
-    ["@variable.parameter"] = { fg = c.yellow }, -- For parameters of a function.
-    ["@variable.parameter.builtin"] = { fg = util.lighten(c.yellow, 0.8) }, -- For builtin parameters of a function, e.g. "..." or Smali's p[1-99]
+    ["@variable.parameter"] = { fg = c.red3 }, -- For parameters of a function.
+    ["@variable.parameter.builtin"] = { fg = util.lighten(c.red3, 0.8) }, -- For builtin parameters of a function, e.g. "..." or Smali's p[1-99]
 
     --- Keywords
     ["@keyword"] = { fg = c.purple, style = styles.keywords }, -- For keywords that don't fall in previous categories.
@@ -366,6 +372,11 @@ function M.setup()
     ["@lsp.type.interface"] = { fg = util.lighten(c.blue1, 0.7) },
     ["@lsp.type.keyword"] = { link = "@keyword" },
     ["@lsp.type.lifetime"] = { link = "@keyword.storage" },
+    -- A server reports every use of a macro as `macro`, which otherwise falls
+    -- through to the preprocessor colour -- so `FOO(x)` would come out as a
+    -- `#define` rather than as the call it reads as. Treesitter already calls
+    -- that site `@function.call`; this keeps the two highlighters agreeing.
+    ["@lsp.type.macro"] = { link = "@function" },
     ["@lsp.type.namespace"] = { link = "@module" },
     ["@lsp.type.number"] = { link = "@number" },
     ["@lsp.type.operator"] = { link = "@operator" },
@@ -843,7 +854,7 @@ function M.setup()
     MiniHipatternsFixme = { fg = c.black, bg = c.error, bold = true },
     MiniHipatternsHack = { fg = c.black, bg = c.warning, bold = true },
     MiniHipatternsNote = { fg = c.black, bg = c.hint, bold = true },
-    MiniHipatternsTodo = { fg = c.black, bg = c.info, bold = true },
+    MiniHipatternsTodo = { fg = c.black, bg = c.todo, bold = true },
 
     MiniIconsAzure = { fg = c.info },
     MiniIconsBlue = { fg = c.blue },
@@ -939,7 +950,7 @@ function M.setup()
     NoiceCmdlinePopupTitleInput = { fg = c.yellow },
 
     TreesitterContext = { bg = util.darken(c.fg_gutter, 0.8) },
-    Hlargs = { fg = c.yellow },
+    Hlargs = { fg = c.red3 },
     -- TreesitterContext = { bg = util.darken(c.bg_visual, 0.4) },
   }
 

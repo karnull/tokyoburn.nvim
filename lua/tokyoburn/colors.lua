@@ -2,50 +2,93 @@ local util = require("tokyoburn.util")
 
 local M = {}
 
--- TokyoBurn is a pastel theme on a warm dark background, skewed towards red and
--- pink but keeping genuinely distinct blue, green, cyan and purple hues so that
--- syntax groups (e.g. functions vs variables) stay high-contrast and readable.
+-- TokyoBurn is Tokyo after dark with the city on fire: neon signage burning
+-- over a charred, ember-warm ground.
+--
+-- Two families do all the work. The fire half -- blood red, molten orange,
+-- bright yellow -- is the ambient one: it owns the gutter, the borders, the
+-- folds, the selection, the statements, the strings, and every function name.
+-- Red leads it, and it leads the theme.
+--
+-- The neon half -- electric blue, hot pink, acid green, cyan, violet -- is the
+-- signage. It is fully saturated on purpose, and it is rare on purpose: it
+-- marks the things worth looking at (TODOs, diagnostics, types, properties) so
+-- they glow off the char rather than sitting in it. Nothing here is pastel;
+-- everything is pushed to the top of its hue so it survives being laid on a
+-- background this dark.
+--
+-- Rose pink is the seam between the two halves and is reserved for
+-- highlighting: search matches, the matched bracket, the border of a focused
+-- float.
+--
+-- Chrome that only marks a position (the cursor line and column, the ruler) is
+-- desaturated out of both halves entirely.
 ---@class Palette
 M.default = {
   none = "NONE",
-  bg_dark = "#1b110d",
+  -- The ground is char, not brown: nearly black, with just enough red left in
+  -- it to read as something that has been burning rather than something grey.
+  --
+  -- `bg` is load-bearing beyond its own colour -- every `util.darken` call
+  -- blends against it, including the diff backgrounds -- so it stays fixed.
+  bg_dark = "#190c08",
   bg = "#251812",
-  bg_highlight = "#3a261d",
-  terminal_black = "#4d362c",
-  fg = "#f5e8dd",
-  fg_dark = "#dcc6b6",
-  fg_gutter = "#a37e6d",
-  fg_LineNr = "#ff8a99",
-  dark3 = "#9a6555",
-  comment = "#b58e7c",
-  dark5 = "#c39a86",
-  blue0 = "#5a3a55",
-  blue = "#82c0ff",
-  cyan = "#86e0d6",
-  blue1 = "#8fd0ff",
-  blue2 = "#8ec2ff",
-  blue5 = "#a8d8ff",
-  blue6 = "#cdeaff",
-  blue7 = "#4a2e2a",
-  magenta = "#f6a3d0",
-  magenta2 = "#ff7eb6",
-  purple = "#c8a2ff",
-  orange = "#ffb27a",
-  yellow = "#ffe08a",
-  green = "#a6e3a1",
-  green1 = "#b8e6a0",
-  green2 = "#8fcf8a",
-  teal = "#7fd5c0",
-  red = "#ff8088",
-  red1 = "#ff6b75",
-  red2 = "#5e1f24",
-  red3 = "#ff97a0",
-  red4 = "#ff8088",
-  -- Soft tints used by the lualine mode indicators.
-  rose = "#ff9bb3",
-  pastel_yellow = "#ffe9a8",
-  pastel_orange = "#ffcb98",
-  pastel_red = "#ffa3a3",
+  bg_highlight = "#3d2016",
+  -- The cursor crosshair and the 'colorcolumn' ruler are chrome, not syntax, so
+  -- they are pulled out of the palette entirely: a true neutral grey (R=G=B),
+  -- which is also why it can sit this dark and still be findable -- against a
+  -- warm ground the absence of hue separates it as much as the lightness does.
+  -- One value for all three, at 1.09 against the night background and 1.26 over
+  -- a black terminal under `transparent`. It marks where the cursor is; it is
+  -- not meant to read as a band across the buffer.
+  bg_cursorline = "#1e1e1e",
+  terminal_black = "#52291f",
+  fg = "#ffeadf",
+  fg_dark = "#e3c3b2",
+  fg_gutter = "#8f5f4e",
+  fg_LineNr = "#ff5c6e",
+  dark3 = "#96584a",
+  -- Comments sit almost on the greyscale axis (6% saturation): they are the one
+  -- large block of text that should not take a side between fire and neon.
+  comment = "#8a807b",
+  dark5 = "#b5806c",
+  -- Neon: the signage half. Saturation is the point -- these are meant to look
+  -- lit rather than printed.
+  blue = "#3db8ff",
+  blue1 = "#18ccff",
+  blue2 = "#4aa8ff",
+  blue5 = "#6fd0ff",
+  blue6 = "#b7ecff",
+  blue7 = "#4a2018",
+  cyan = "#19e6d6",
+  teal = "#0fd6b4",
+  green = "#4ae87f",
+  green1 = "#72f59b",
+  green2 = "#22b45e",
+  magenta = "#ff5ad0",
+  magenta2 = "#ff44ad",
+  purple = "#b583ff",
+  -- Fire: the ambient half, and the one that leads. The four reds are ordered
+  -- by lightness so they stay apart in a buffer: `red1` is the hot one and
+  -- belongs to errors and statements, `red` is structural (borders, folds,
+  -- `self`), `red2` is the bright one that calls attention to a name -- the
+  -- cursor's own line number and every function -- and `red3` is the light
+  -- ember used for parameters. Yellow is no longer rationed: strings spend it.
+  red = "#ff3b4e",
+  red1 = "#ff2d4a",
+  red2 = "#ff4a4a",
+  red3 = "#ff7a85",
+  red4 = "#ff3b4e",
+  orange = "#ff7a29",
+  yellow = "#ffe14a",
+  -- The highlight accent, the seam between fire and neon: search matches, the
+  -- matched bracket, the border of a focused float. Also lualine's normal mode,
+  -- which is what it was originally mixed for.
+  rose = "#ff6f9c",
+  -- Soft tints used by the remaining lualine mode indicators.
+  pastel_yellow = "#ffd977",
+  pastel_orange = "#ffa861",
+  pastel_red = "#ff8a8a",
   -- Diff mode works from these two, stepped onto the theme ground in `M.setup`.
   --
   -- Both are far too bright to use as line backgrounds directly (text sits at
@@ -69,7 +112,7 @@ M.default = {
 
 M.night = {
   bg = "#1f130e",
-  bg_dark = "#160d09",
+  bg_dark = "#120806",
 }
 M.day = M.night
 
@@ -108,7 +151,10 @@ function M.setup(opts)
 
   colors.git.ignore = colors.dark3
   colors.black = util.darken(colors.bg, 0.8, "#000000")
-  colors.border_highlight = util.darken(colors.yellow, 0.8)  -- b l u e
+  -- `border_highlight` frames the focused float, so it takes the highlight
+  -- accent rather than another structural red: against `border` (plain red) it
+  -- is the pair that says which window you are actually in.
+  colors.border_highlight = util.darken(colors.rose, 0.8)
   colors.border = colors.red
 
   -- Popups and statusline always get a dark background
@@ -126,13 +172,19 @@ function M.setup(opts)
     or colors.bg
 
   colors.bg_visual = util.darken(colors.red1, 0.4)
-  colors.bg_search = util.darken(colors.yellow, 0.45)
+  -- The visual selection stays red (the main colour, and the larger block of
+  -- the two); search matches take rose, so a selection and a match are never
+  -- the same wash of colour on screen at once.
+  colors.bg_search = util.darken(colors.rose, 0.45)
   colors.fg_sidebar = colors.fg_dark
   -- colors.fg_float = styles.floats == "dark" and colors.fg_dark or colors.fg
   colors.fg_float = colors.fg
 
   colors.error = colors.red1
-  colors.todo = colors.blue
+  -- `todo` is the loudest cool colour in the theme on purpose: a TODO is the
+  -- one comment you want to catch across a warm, low-contrast buffer, and no
+  -- warm hue can do that here without being mistaken for an error or a string.
+  colors.todo = colors.blue1
   colors.warning = colors.yellow
   colors.info = colors.blue2
   colors.hint = colors.teal
